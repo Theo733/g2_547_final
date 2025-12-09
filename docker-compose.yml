@@ -8,7 +8,7 @@ services:
     command: >
       mlflow server
       --host 0.0.0.0
-      --backend-store-uri sqlite:///mlflow.db
+      --backend-store-uri ${APP_DB_URL}
       --default-artifact-root s3://mlflow-bucket-g2-new
       --serve-artifacts
       --artifacts-destination s3://mlflow-bucket-g2-new
@@ -20,6 +20,8 @@ services:
       - tracking-server
     env_file:
       - .env
+    environment:
+      - MLFLOW_TRACKING_URI=http://tracking-server:5000
     command: >
       mlflow models serve
       -m "models:/steam_playtime_increase_model/1"

@@ -257,46 +257,76 @@ def group_train_val_test_split(
 # 4. Model + feature pipeline
 # ---------------------------------------------------------------------
 
-
 def build_model():
     """
     Build a sklearn Pipeline for binary classification using
-    HistGradientBoostingClassifier and basic preprocessing.
+    HistGradientBoostingClassifier and preprocessing that matches
+    the original notebook:
+
+      - Scale numeric features
+      - Pass through boolean features
+      - One-hot encode categorical features
 
     Returns:
       model: sklearn Pipeline
       feature_cols: list of feature column names
     """
 
-    # Example feature selection: adjust to match your real columns
+    # Continuous numeric features (from the notebook)
     numeric_features = [
+        "author_num_games_owned",
+        "author_num_reviews",
         "author_playtime_at_review",
-        "author_playtime_forever",
-        # add other numeric features here
+        "author_playtime_last_two_weeks",
+        "votes_up",
+        "votes_funny",
+        "comment_count",
+        "weighted_vote_score",
+        "len_char",
+        "len_token",
+        "R_len",
+        "R_digit",
+        "specificity_idf",
+        "R_spec",
+        "R_fam",
+        "R_conc",
+        "specificity_lex",
+        "sentiment_score",
     ]
 
+    # Boolean / 0–1 features
+    bool_features = [
+        "voted_up",
+        "steam_purchase",
+        "received_for_free",
+        "written_during_early_access",
+        "primarily_steam_deck",
+    ]
+
+    # Categorical features
     categorical_features = [
-        "voted_up",  # example boolean / categorical
-        # add other categorical columns here
+        "author_language",
+        "sentiment_label",
     ]
 
-    feature_cols = numeric_features + categorical_features
+    feature_cols = numeric_features + bool_features + categorical_features
 
+    # Preprocessing
     numeric_transformer = Pipeline(
         steps=[
             ("scaler", StandardScaler()),
         ]
     )
 
-    categorical_transformer = Pipeline(
-        steps=[
-            ("onehot", OneHotEncoder(handle_unknown="ignore")),
-        ]
-    )
+    # Booleans are already 0/1 → passthrough
+    bool_transformer = "passthrough"
+
+    categorical_transformer = OneHotEncoder(handle_unknown="ignore")
 
     preprocessor = ColumnTransformer(
         transformers=[
             ("num", numeric_transformer, numeric_features),
+            ("bool", bool_transformer, bool_features),
             ("cat", categorical_transformer, categorical_features),
         ]
     )
@@ -305,15 +335,14 @@ def build_model():
         random_state=RANDOM_STATE,
     )
 
-    clf = Pipeline(
+    model = Pipeline(
         steps=[
             ("preprocess", preprocessor),
             ("model", classifier),
         ]
     )
 
-    return clf, feature_cols
-
+    return model, feature_cols
 
 # ---------------------------------------------------------------------
 # 5. Evaluation helper
