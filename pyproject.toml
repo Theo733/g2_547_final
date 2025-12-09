@@ -1,0 +1,15 @@
+[project]
+name = "g2-547-final"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12.1"
+dependencies = [
+    "boto3>=1.42.4",
+    "jupyter>=1.1.1",
+    "lab>=8.6",
+    "mlflow>=3.7.0",
+    "openpyxl>=3.1.5",
+    "psycopg2-binary>=2.9.11",
+    "sqlalchemy>=2.0.44",
+]
