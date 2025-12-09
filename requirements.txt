@@ -1,0 +1,8 @@
+mlflow
+boto3
+psycopg2-binary
+pandas
+numpy
+scikit-learn
+sqlalchemy
+python-dotenv
