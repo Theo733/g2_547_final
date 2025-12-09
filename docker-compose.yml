@@ -1,39 +1,10 @@
 services:
-  # postgres:
-  #   image: postgres
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-  #     interval: 10s
-  #     retries: 5
-  #     start_period: 30s
-  #     timeout: 10s
-  #   restart: always
-  #   container_name: postgres_db
-  #   environment:
-  #     POSTGRES_DB: ${POSTGRES_DB}
-  #     POSTGRES_USER: ${POSTGRES_USER}
-  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data
-  #   ports:
-  #     - "5432:5432"
-
   tracking-server:
-    build:
-      context: .
-      dockerfile: "${DOCKERFILE:-Dockerfile}"
-    # depends_on:
-    #   postgres:
-    #     condition: service_healthy
+    image: theo733/g2_547_final:latest
+    env_file:
+      - .env
     ports:
       - "5050:5000"
-    environment:
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      MLFLOW_S3_ENDPOINT_URL: ${MLFLOW_S3_ENDPOINT_URL}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     command: >
       mlflow server
       --host 0.0.0.0
@@ -43,5 +14,16 @@ services:
       --artifacts-destination s3://mlflow-bucket-g2-new
       --gunicorn-opts "--log-level debug"
 
-# volumes:
-#   postgres_data: { }
+  inference:
+    image: theo733/g2_547_final:latest
+    depends_on:
+      - tracking-server
+    env_file:
+      - .env
+    command: >
+      mlflow models serve
+      -m "models:/steam_playtime_increase_model/1"
+      -p 5000
+      --host 0.0.0.0
+    ports:
+      - "5001:5000"
